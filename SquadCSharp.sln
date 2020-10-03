@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.74
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SquadCSharp", "SquadCSharp\SquadCSharp.csproj", "{EDE120CD-4E60-4A88-A95E-49A9661D8B6C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDE120CD-4E60-4A88-A95E-49A9661D8B6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDE120CD-4E60-4A88-A95E-49A9661D8B6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDE120CD-4E60-4A88-A95E-49A9661D8B6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDE120CD-4E60-4A88-A95E-49A9661D8B6C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C5F4BDA4-150C-4D5E-86F0-976FC940FC65}
+	EndGlobalSection
+EndGlobal

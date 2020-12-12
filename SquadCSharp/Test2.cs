@@ -12,16 +12,17 @@ namespace SquadCSharp
         public Dictionary<string, string> _AllPatterns;
 
         //C_ID = Key, UserName = Value
-        public Dictionary<string, string> setUserNameToC_ID;
+        public Dictionary<string, string> C_IDWithUser;
 
         //SteamID = Key, C_ID = Value
-        private Dictionary<string, string> userSteamToC_ID;
+        private Dictionary<string, string> SteamWithC_ID;
 
-        //Sets something to Team
-        public Dictionary<string, string> userSetToTeam;
+        //UserName = Key, TeamID = Value
+        public Dictionary<string, string> UserWithTeam;
         public List<string> adminInCameraList;
         public Dictionary<string, string> adminInCameraDic;
         private string C_ID;
+        private string steamID;
         public String voidTest()
         {
             return "It worked";
@@ -32,18 +33,26 @@ namespace SquadCSharp
             C_ID = "";
             adminInCameraList = new List<string>();
             adminInCameraDic = new Dictionary<string, string>();
-            userSetToTeam = new Dictionary<string, string>();
-            setUserNameToC_ID = new Dictionary<string, string>();
-            userSteamToC_ID = new Dictionary<string, string>();
+            UserWithTeam = new Dictionary<string, string>();
+
+            C_IDWithUser = new Dictionary<string, string>();
+            SteamWithC_ID = new Dictionary<string, string>();
+
             _AllPatterns = new Dictionary<string, string>();
             _internalClass = new InternalClass();
             regexSetup();
+
+
+            
+            
+            
         }
 
         private void regexSetup()
         {
-            _AllPatterns.Add("playerConnected", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: PostLogin: NewPlayer: BP_PlayerController_C \\/Game\\/Maps\\/[A-z]+\\/(?:Gameplay_Layers\\/)?[A-z0-9_]+.[A-z0-9_]+:PersistentLevel.BP_PlayerController_(C_[0-9]+)");
+            _AllPatterns.Add("playerConnected", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: PostLogin: NewPlayer: BP_PlayerController_C (.+).BP_PlayerController_(C_[0-9]+)");
             _AllPatterns.Add("steamID", "\\[([0-9.:-]+)]\\[[ 0-9]*]LogEasyAntiCheatServer: \\[[0-9:]+]\\[[A-z]+]\\[EAC Server] \\[Info]\\[RegisterClient] Client: ([A-z0-9]+) PlayerGUID: ([0-9]{17}) PlayerIP: [0-9]{17} OwnerGUID: [0-9]{17} PlayerName: (.+)");
+            _AllPatterns.Add("playerName", "\\[([0-9.:-]+)]\\[[ 0-9]*]LogNet: Join succeeded: (.+)");
             _AllPatterns.Add("chatMessage", "\\[(ChatAll|ChatTeam|ChatSquad|ChatAdmin)] \\[SteamID:([0-9]{17})] (.+?) : (.*)");
             _AllPatterns.Add("removeUser", "\\[([0-9.:-]+)][[ 0-9]+]LogNet: UChannel::Close: [A-z0-9_ ,.=:]+ RemoteAddr: ([0-9]+):[A-z0-9_ ,.=:]+ BP_PlayerController_(C_[0-9]+)");
             _AllPatterns.Add("adminBroadcast", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: ADMIN COMMAND: Message broadcasted <(.+)> from (.+)");
@@ -63,39 +72,128 @@ namespace SquadCSharp
         public void matchList(string stringType, string line , string[] substring, MySqlConnection conn, Boolean newUser = false)
         {
             String _SQL;
+            MySqlCommand cmd;
             switch (stringType)
             {
                 case "playerDied":
+
+                    //foreach (var sub in substring)
+                    //    Console.WriteLine(sub);
+
+                    if (substring[5].Equals("nullptr"))
+                        break;
                     //substring = 7 length, 0 - 7 are empty
-                    //userSetToTeam
-                    //setUserNameToC_ID
-                    //userSteamToC_ID
-                    //Console.WriteLine(line);
-                    //foreach (var test in substring)
+                    /*
+                     * 1 = Date
+                     * 2 = Victim (UserName)
+                     * 3 = Damage
+                     * 4 = Assault (C_ID)
+                     * 5 = Team
+                     */
+
+                    //foreach(var test in UserWithTeam)
+                    //{
                     //    Console.WriteLine(test);
+                    //}
+
+                    //Console.WriteLine("");
+                    //Console.WriteLine("");
+
+                    //{UserWithTeam} to determine which team player is on for both victim/attacker
+                    //SteamWithC_ID
+                    //C_IDWithUser
+                    //Console.WriteLine("The Victim Team: " + UserWithTeam[substring[2]] + " The Attacker Team: " + UserWithTeam[C_IDWithUser[substring[4]]]);
+                    //Console.WriteLine(UserWithTeam[substring[2]]);
+                    //Console.WriteLine(UserWithTeam[C_IDWithUser[substring[4]]]);
+                    //Console.WriteLine(line);
+                    string victimResult, attackerResult, cIDResult;
+                    if (UserWithTeam.TryGetValue(substring[2], out victimResult))
+                    {
+                        if (substring[4].Equals("C_2146556060"))
+                            Console.WriteLine("Was he added?");
+                        C_IDWithUser.TryGetValue(substring[4], out cIDResult);
+                        if (String.IsNullOrEmpty(cIDResult)) { attackerResult = "";} else { UserWithTeam.TryGetValue(cIDResult, out attackerResult);}
+                          
+
+                        if (String.IsNullOrEmpty(attackerResult))
+                        {
+                            Console.WriteLine("There was a Potential TeamKill");
+                            Console.WriteLine("The Victim Team was: " + victimResult);
+                            Console.WriteLine(line);
+                            break;
+                        }
+
+                        if (String.IsNullOrEmpty(victimResult))
+                            Console.WriteLine("test");
+                        //Console.WriteLine(substring[2]);
+                        //Console.WriteLine(result);
+                        //Console.WriteLine("");
+                        //Console.WriteLine(C_IDWithUser[substring[4]]);
+                        //Console.WriteLine(UserWithTeam[C_IDWithUser[substring[4]]]);
+                        if (victimResult.Equals(attackerResult))
+                        {
+                            Console.WriteLine("There was a TeamKill");
+                            Console.WriteLine(line);
+
+                        }
+                    }
+
+
                     break;
                 case "playerUnPosses":
                     //Add Future Logic for seeing if someone is using admin cam to cheat. 
                     if (adminInCameraDic.ContainsKey(substring[2])){
+                        //Console.WriteLine(line);
                         adminInCameraDic[substring[2]] = "Inactive";
                     }
                     break;
+                case "playerName":
+                    //foreach (var sub in substring)
+                    //    Console.WriteLine(sub);
+                    C_IDWithUser[C_ID] = substring[2];
+                    if (steamID.Equals(""))
+                        steamID = "00000000000000000";
+                    _SQL = "INSERT IGNORE INTO userNameList (steamID, userName) VALUES (@steamID, @userName);";
+                    cmd = new MySqlCommand(_SQL, conn);
+                    cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(steamID);
+                    cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
+                    cmd.ExecuteNonQuery();
+
+                    _SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
+                             ON DUPLICATE KEY UPDATE
+                             userName = VALUES(userName),
+                             connected = VALUES(connected)";
+                    cmd = new MySqlCommand(_SQL, conn);
+                    cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(steamID);
+                    cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
+                    cmd.Parameters.Add("@connected", MySqlDbType.Int32).Value = 1;
+                    cmd.ExecuteNonQuery();
+
+                    steamID = "";
+                    C_ID = "";
+
+                    break;
+                case "playerConnected":
+                    C_ID = substring[3];
+                    if (substring[3].Equals("C_2146556060"))
+                        Console.WriteLine("He was added?");
+                    //Console.WriteLine(C_ID);
+                    //Adding the User C_ID to the Dictionary First, since we don't know the UserName yet. 
+                    C_IDWithUser.Add(substring[3], "not defined");
+
+                    break;
                 case "UserJoining":
-                    if (!newUser)
+                    if(newUser)
                     {
-                        //Console.WriteLine("We are inside the if..");
-                        //for (int i = 0; i < substring.Length; i++)
-                        //{
-                        //    Console.WriteLine("I is: " + i + " the string is: " + substring[i]);
-                        //}
-                        //Console.WriteLine(substring.Length);
-                        C_ID = substring[2];
-                        //Console.WriteLine(C_ID);
-                        //Adding the User C_ID to the Dictionary First, since we don't know the UserName yet. 
-                        setUserNameToC_ID.Add(substring[2], "not defined");
-                    }
-                    else if(newUser)
-                    {
+                        //Error: No teams exist yet
+                        /*
+                         * Need to find logic to handle when this error gets thrown
+                         */
+                        if (String.IsNullOrEmpty(C_ID))
+                        {
+                            break;
+                        }
+
                         //Console.WriteLine("We are inside the if..");
                         //for (int i = 0; i < substring.Length; i++)
                         //{
@@ -104,76 +202,79 @@ namespace SquadCSharp
 
                         //Console.WriteLine("User: " + substring[4] + " Has Joined the Server, with C_ID: " + C_ID + " and SteamID: " + substring[3]);
                         //Now that we have the User Name, we are combining that with the C_ID. 
-                        setUserNameToC_ID[C_ID] = substring[4];
+                        //C_IDWithUser[C_ID] = substring[4];
 
+                        steamID = substring[3];
                         //Game Logs use SteamID to see who leaves. 
                         //We are setting that as the Key, and it's value as the C_ID
-                        userSteamToC_ID.Add(substring[3], C_ID);
+                        //Console.WriteLine("I'm about to add to SteamWithC_ID");
+
+                        SteamWithC_ID.Add(substring[3], C_ID);
                         try
                         {
-                            _SQL = "INSERT INTO steamuser (steamID) VALUES (" + Int64.Parse(substring[3]) + ");";
-                            MySqlCommand cmd = new MySqlCommand(_SQL, conn);
+                            _SQL = "INSERT IGNORE INTO steamuser (steamID) VALUES (@steamID);";
+                            cmd = new MySqlCommand(_SQL, conn);
+                            cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[3]);
                             cmd.ExecuteNonQuery();
 
-                            _SQL = "INSERT INTO userNameList (steamID, userName) VALUES (" + Int64.Parse(substring[3]) + ", '" + substring[4] + "');";
-                            cmd = new MySqlCommand(_SQL, conn);
-                            cmd.ExecuteNonQuery();
+
 
                             _SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType , @message)";
-                            Console.WriteLine(_SQL);
                             cmd = new MySqlCommand(_SQL, conn);
                             cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[3]);
                             cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = "Connected";
                             cmd.Parameters.Add("@message", MySqlDbType.Text).Value = substring[4] + " joined the server";
                             cmd.ExecuteNonQuery();
 
-                            _SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
-                                     ON DUPLICATE KEY UPDATE
-                                     userName = VALUES(@userName),
-                                     connected = VALUES(@connected)";
-                            cmd = new MySqlCommand(_SQL, conn);
-                            cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[3]);
-                            cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[4];
-                            cmd.Parameters.Add("@connected", MySqlDbType.Int32).Value = 1;
-                            cmd.ExecuteNonQuery();
 
-                            Console.WriteLine("SteamID/UserName Added");
+
+                            //Console.WriteLine("SteamID/UserName Added");
                         }
                         catch (Exception e)
                         {
-                            //Console.WriteLine(e);
+                            Console.WriteLine(e);
                         }
                     }
                     break;
                 case "removeUser":
-                    if (userSteamToC_ID.ContainsKey(substring[2]))
+                    if (SteamWithC_ID.ContainsKey(substring[2]))
                     {
                         //Console.WriteLine("This user: " + userBP_C[userSteamToBP_C[substring[2]]] + " Has decided to leave the server");
                         //Console.WriteLine(setUserNameToC_ID[userSteamToC_ID[substring[2]]]);
-                        if (adminInCameraDic.ContainsKey(setUserNameToC_ID[userSteamToC_ID[substring[2]]]))
-                            adminInCameraDic[setUserNameToC_ID[userSteamToC_ID[substring[2]]]] = "Inactive";
+                        if (adminInCameraDic.ContainsKey(C_IDWithUser[SteamWithC_ID[substring[2]]]))
+                            adminInCameraDic[C_IDWithUser[SteamWithC_ID[substring[2]]]] = "Inactive";
 
+                        try
+                        {
+                            _SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType , @message)";
+                            //Console.WriteLine(_SQL);
+                            cmd = new MySqlCommand(_SQL, conn);
+                            cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
+                            cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = "Disconnected";
+                            cmd.Parameters.Add("@message", MySqlDbType.Text).Value = C_IDWithUser[SteamWithC_ID[substring[2]]] + " left the server";
+                            cmd.ExecuteNonQuery();
 
-                        _SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType , @message)";
-                        Console.WriteLine(_SQL);
-                        MySqlCommand cmd = new MySqlCommand(_SQL, conn);
-                        cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
-                        cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = "Disconnected";
-                        cmd.Parameters.Add("@message", MySqlDbType.Text).Value = setUserNameToC_ID[userSteamToC_ID[substring[2]]] + " left the server";
-                        cmd.ExecuteNonQuery();
-
-                        _SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
+                            _SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
                                      ON DUPLICATE KEY UPDATE
-                                     userName = VALUES(@userName),
-                                     connected = VALUES(@connected)";
-                        cmd = new MySqlCommand(_SQL, conn);
-                        cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
-                        cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = setUserNameToC_ID[userSteamToC_ID[substring[2]]];
-                        cmd.Parameters.Add("@connected", MySqlDbType.Int32).Value = 0;
-                        cmd.ExecuteNonQuery();
+                                     userName = VALUES(userName),
+                                     connected = VALUES(connected)";
+                            cmd = new MySqlCommand(_SQL, conn);
+                            cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
+                            cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = C_IDWithUser[SteamWithC_ID[substring[2]]];
+                            cmd.Parameters.Add("@connected", MySqlDbType.UInt32).Value = 0;
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception e)
+                        {
 
-                        setUserNameToC_ID.Remove(userSteamToC_ID[substring[2]]);
-                        userSteamToC_ID.Remove(substring[2]);
+                            Console.WriteLine(e);
+                        }
+                        
+
+                        //Console.WriteLine("SteamID/UserName Removed");
+
+                        C_IDWithUser.Remove(SteamWithC_ID[substring[2]]);
+                        SteamWithC_ID.Remove(substring[2]);
                     }
                     else
                     {
@@ -182,19 +283,19 @@ namespace SquadCSharp
                     break;
                 case "playerPosses":
                     string bp_soldier = "bp_soldier";
-                    //foreach (var sub in substring)
-                    //    Console.WriteLine(sub);
+
                     if (substring[3].ToLower().StartsWith(bp_soldier))
                     {
                         string[] teamID = substring[3].Split("_");
-                        if (userSetToTeam.ContainsKey(substring[2]))
+                        if (UserWithTeam.ContainsKey(substring[2]))
                         {
-                            userSetToTeam[substring[2]] = teamID[2];
+                            UserWithTeam[substring[2]] = teamID[2];
                         }
                         else
                         {
-                            userSetToTeam.Add(substring[2], teamID[2]);
+                            UserWithTeam.Add(substring[2], teamID[2]);
                         }
+                        //Console.WriteLine("substring[2]: " + substring[2] + "With teamID: " + teamID[2]);
 
                     }
                     else if (substring[3].ToLower().StartsWith("cameraman"))
@@ -207,6 +308,11 @@ namespace SquadCSharp
                         {
                             adminInCameraDic.Add(substring[2], "Active");
                         }
+                        _SQL = "INSERT INTO adminlog (userName, logMessage) VALUES (@userName, @logMessage)";
+                        cmd = new MySqlCommand(_SQL, conn);
+                        cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
+                        cmd.Parameters.Add("@logMessage", MySqlDbType.Text).Value = line;
+                        cmd.ExecuteNonQuery();
                     }
                     break;
                 case "chatMessage":
@@ -215,8 +321,8 @@ namespace SquadCSharp
                     try
                     {
                         _SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType, @message)";
-                        Console.WriteLine(_SQL);
-                        MySqlCommand cmd = new MySqlCommand(_SQL, conn);
+                        //Console.WriteLine(_SQL);
+                        cmd = new MySqlCommand(_SQL, conn);
                         cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
                         cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = substring[1];
                         cmd.Parameters.Add("@message", MySqlDbType.Text).Value = substring[4];

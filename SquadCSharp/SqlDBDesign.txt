@@ -1,0 +1,35 @@
+﻿drop DATABASE testDB;
+
+CREATE DATABASE testDB;
+
+SHOW DATABASES;
+
+use testdb;
+
+CREATE TABLE IF NOT EXISTS steamuser (
+	steamID bigint NOT NULL UNIQUE PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS userNameList(
+	steamID bigint,
+	userName VarChar(256)
+);
+
+
+CREATE TABLE IF NOT EXISTS chatLog(
+	steamID bigint,
+	chatType VarChar(256),
+	message TEXT
+);
+
+CREATE TABLE IF NOT EXISTS playerList(
+	steamID bigint,
+	userName VarChar(256),
+	connected int
+);
+
+
+CREATE TABLE IF NOT EXISTS adminlog(
+	userName VarChar(256),
+	logMessage TEXT
+)

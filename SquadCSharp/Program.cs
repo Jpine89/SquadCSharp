@@ -37,13 +37,14 @@ namespace SquadCSharp
 
             InhertianceClass test22 = new InhertianceClass();
             Console.WriteLine(test22._InternalTest);
-            Boolean userJoining = false;
+            Boolean userJoining = false; 
             Test2 tryingSomething = new Test2();
             Console.WriteLine(tryingSomething._internalClass._InternalTest);
             Console.WriteLine(tryingSomething._internalClass._InternalTest);
             Regex rg;
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/ChatExample.txt";
-            string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/ServerLog.log";
+            //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/ServerLog.log";
+            string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGameReal.log";
             Console.WriteLine("Hello World!");
             Boolean done = true;
 
@@ -116,6 +117,7 @@ namespace SquadCSharp
                                 Match match = rg.Match(line);
                                 if (match.Success)
                                 {
+                                    /*|| Regex.IsMatch(match.Value, "Error: No teams exist yet")*/
                                     if (userJoining & Regex.IsMatch(match.Value, "LogEasyAntiCheatServer"))
                                     {
                                         subStrings = Regex.Split(line, tester.Value);
@@ -127,7 +129,7 @@ namespace SquadCSharp
                                     else if (Regex.IsMatch(match.Value, "NewPlayer: BP_PlayerController_C"))
                                     {
                                         subStrings = Regex.Split(line, tester.Value);
-                                        tryingSomething.matchList("UserJoining", match.Value, subStrings, conn);
+                                        tryingSomething.matchList("playerConnected", match.Value, subStrings, conn);
                                         lineReturn = match.Value;
                                         userJoining = true;
                                         break;
@@ -165,16 +167,6 @@ namespace SquadCSharp
 
                     done = false;
                 }
-                //Console.WriteLine("we are outside the loop");
-                //foreach (var dic in tryingSomething.userSetToTeam)
-                //    Console.WriteLine("The userName is: " + dic.Key + ", The UserTeam is: " + dic.Value);
-
-                //foreach (var list in tryingSomething.adminInCameraList)
-                //    Console.WriteLine(list);
-
-                //foreach (var dic in tryingSomething.adminInCameraDic)
-                //    Console.WriteLine("The Admin is: " + dic.Key + ", The admin is: " + dic.Value);
-
             }
 
 

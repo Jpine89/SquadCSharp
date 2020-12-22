@@ -1,8 +1,11 @@
-﻿using MySql.Data.MySqlClient;
+﻿using DSharpPlus;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace SquadCSharp
 {
@@ -28,6 +31,13 @@ namespace SquadCSharp
             return "It worked";
         }
 
+        string _unidenfiedKill;
+        string _TeamKill;
+        string _unidenfiedVictim;
+        string _unidenfiedKiller;
+        string _allKills;
+        public DiscordClient Client { get; set; }
+
         public Test2()
         {
             C_ID = "";
@@ -41,11 +51,15 @@ namespace SquadCSharp
             _AllPatterns = new Dictionary<string, string>();
             _internalClass = new InternalClass();
             regexSetup();
+            //var prog = new Test2();
+            //MainAsync().GetAwaiter().GetResult();
+            _unidenfiedKill = "";
+            _TeamKill = "";
+            _unidenfiedVictim = "";
+            _unidenfiedKiller= "";
+            _allKills = "";
 
 
-            
-            
-            
         }
 
         private void regexSetup()
@@ -59,10 +73,10 @@ namespace SquadCSharp
             _AllPatterns.Add("newGame", "\\[([0-9.:-]+)][[ 0-9]*]LogWorld: Bringing World \\/([A-z]+)\\/Maps\\/([A-z]+)\\/(?:Gameplay_Layers\\/)?([A-z0-9_]+)");
             _AllPatterns.Add("playerDamaged", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: Player:(.+) ActualDamage=([0-9.]+) from (.+) caused by ([A-z_0-9]+)_C");
             _AllPatterns.Add("playerDied", "\\[([0-9.:-]+)][[ 0-9]*]LogSquadTrace: \\[DedicatedServer](?:ASQSoldier::)?Die\\(\\): Player:(.+) KillingDamage=(?:-)*([0-9.]+) from BP_PlayerController_([A-z_0-9]+) caused by ([A-z_0-9]+)");
-            _AllPatterns.Add("playerPosses", "\\[([0-9.:-]+)][[ 0-9]*]LogSquadTrace: \\[DedicatedServer](?:ASQPlayerController::)?OnPossess\\(\\): PC=(.+) Pawn=([A-z0-9_]+)_C");
+            _AllPatterns.Add("playerPosses", "\\[([0-9.:-]+)][[ 0-9]*]LogSquadTrace: .+ PC=(.+) Pawn=([A-z0-9_]+)_C");
             _AllPatterns.Add("playerUnPosses", "\\[([0-9.:-]+)][[ 0-9]*]LogSquadTrace: \\[DedicatedServer](?:ASQPlayerController::)?OnUnPossess\\(\\): PC=(.+)");
             _AllPatterns.Add("playerRevived", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: (.+) has revived (.+)\\.");
-            _AllPatterns.Add("playerWounded", "\\[([0-9.:-]+)][[ 0-9]*]LogSquadTrace: \\[DedicatedServer](?:ASQSoldier::)?Wound\\(\\): Player:(.+) KillingDamage=(?:-)*([0-9.]+) from ([A-z_0-9]+) caused by ([A-z_0-9]+)_C");
+            _AllPatterns.Add("playerWounded", "\\[([0-9.]+)-([0-9.]+):[0-9\\[\\]]+].+Wound\\(\\): Player:(.+) KillingDamage.+ from BP_PlayerController_(.+) caused by (.+)");
             //_AllPatterns.Add("serverTick", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: USQGameState: Server Tick Rate: ([0-9.]+)");
             _AllPatterns.Add("roundWinner", "\\[([0-9.:-]+)][[ 0-9]*]LogSquadTrace: \\[DedicatedServer]ASQGameMode::DetermineMatchWinner\\(\\): (.+) won on (.+)");
             _AllPatterns.Add("playerList", "/ID: ([0-9]+) \\| SteamID: ([0-9]{17}) \\| Name: (.+) \\| Team ID: ([0-9]+) \\| Squad ID: ([0-9]+|N\\/A)");
@@ -72,73 +86,53 @@ namespace SquadCSharp
         public void matchList(string stringType, string line , string[] substring, MySqlConnection conn, Boolean newUser = false)
         {
             String _SQL;
+            string _line;
             MySqlCommand cmd;
+            var prog = new Program();
             switch (stringType)
             {
-                case "playerDied":
+                case "playerWounded":
+                    _allKills += line + "\n";
+                    System.IO.File.WriteAllText(@"C:\Users\FubarP\Documents\SquadTestFiles\allKills.txt", _allKills);
 
                     //foreach (var sub in substring)
                     //    Console.WriteLine(sub);
 
-                    if (substring[5].Equals("nullptr"))
-                        break;
-                    //substring = 7 length, 0 - 7 are empty
+
+                    //if (substring[5].Equals("nullptr"))
+                    //    break;
+                    ////substring = 7 length, 0 - 7 are empty
                     /*
+                     * 0 = Empty
                      * 1 = Date
-                     * 2 = Victim (UserName)
-                     * 3 = Damage
+                     * 2 = Time
+                     * 3 = Victim
                      * 4 = Assault (C_ID)
-                     * 5 = Team
+                     * 5 = Weapon/Team
+                     * 6 = Empty
                      */
 
-                    //foreach(var test in UserWithTeam)
-                    //{
-                    //    Console.WriteLine(test);
-                    //}
 
-                    //Console.WriteLine("");
-                    //Console.WriteLine("");
+                    Console.WriteLine("I'm inside checking out: " + substring[3]);
 
-                    //{UserWithTeam} to determine which team player is on for both victim/attacker
-                    //SteamWithC_ID
-                    //C_IDWithUser
-                    //Console.WriteLine("The Victim Team: " + UserWithTeam[substring[2]] + " The Attacker Team: " + UserWithTeam[C_IDWithUser[substring[4]]]);
-                    //Console.WriteLine(UserWithTeam[substring[2]]);
-                    //Console.WriteLine(UserWithTeam[C_IDWithUser[substring[4]]]);
-                    //Console.WriteLine(line);
                     string victimResult, attackerResult, cIDResult;
-                    if (UserWithTeam.TryGetValue(substring[2], out victimResult))
+                    if (UserWithTeam.TryGetValue(substring[3], out victimResult))
                     {
-                        if (substring[4].Equals("C_2146556060"))
-                            Console.WriteLine("Was he added?");
-                        C_IDWithUser.TryGetValue(substring[4], out cIDResult);
-                        if (String.IsNullOrEmpty(cIDResult)) { attackerResult = "";} else { UserWithTeam.TryGetValue(cIDResult, out attackerResult);}
-                          
-
-                        if (String.IsNullOrEmpty(attackerResult))
+                        handleTeamKills(substring, substring[3], victimResult);
+                    }
+                    else
+                    {
+                        foreach(var player in UserWithTeam)
                         {
-                            Console.WriteLine("There was a Potential TeamKill");
-                            Console.WriteLine("The Victim Team was: " + victimResult);
-                            Console.WriteLine(line);
-                            break;
-                        }
-
-                        if (String.IsNullOrEmpty(victimResult))
-                            Console.WriteLine("test");
-                        //Console.WriteLine(substring[2]);
-                        //Console.WriteLine(result);
-                        //Console.WriteLine("");
-                        //Console.WriteLine(C_IDWithUser[substring[4]]);
-                        //Console.WriteLine(UserWithTeam[C_IDWithUser[substring[4]]]);
-                        if (victimResult.Equals(attackerResult))
-                        {
-                            Console.WriteLine("There was a TeamKill");
-                            Console.WriteLine(line);
-
+                            //Console.WriteLine("The player is: " + player);
+                            if (substring[3].Contains(player.Key))
+                            {
+                                
+                                handleTeamKills(substring, player.Key, player.Value);
+                                break;
+                            }
                         }
                     }
-
-
                     break;
                 case "playerUnPosses":
                     //Add Future Logic for seeing if someone is using admin cam to cheat. 
@@ -151,23 +145,23 @@ namespace SquadCSharp
                     //foreach (var sub in substring)
                     //    Console.WriteLine(sub);
                     C_IDWithUser[C_ID] = substring[2];
-                    if (steamID.Equals(""))
-                        steamID = "00000000000000000";
-                    _SQL = "INSERT IGNORE INTO userNameList (steamID, userName) VALUES (@steamID, @userName);";
-                    cmd = new MySqlCommand(_SQL, conn);
-                    cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(steamID);
-                    cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
-                    cmd.ExecuteNonQuery();
+                    //if (steamID.Equals(""))
+                    //    steamID = "00000000000000000";
+                    //_SQL = "INSERT IGNORE INTO userNameList (steamID, userName) VALUES (@steamID, @userName);";
+                    //cmd = new MySqlCommand(_SQL, conn);
+                    //cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(steamID);
+                    //cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
+                    //cmd.ExecuteNonQuery();
 
-                    _SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
-                             ON DUPLICATE KEY UPDATE
-                             userName = VALUES(userName),
-                             connected = VALUES(connected)";
-                    cmd = new MySqlCommand(_SQL, conn);
-                    cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(steamID);
-                    cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
-                    cmd.Parameters.Add("@connected", MySqlDbType.Int32).Value = 1;
-                    cmd.ExecuteNonQuery();
+                    //_SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
+                    //         ON DUPLICATE KEY UPDATE
+                    //         userName = VALUES(userName),
+                    //         connected = VALUES(connected)";
+                    //cmd = new MySqlCommand(_SQL, conn);
+                    //cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(steamID);
+                    //cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
+                    //cmd.Parameters.Add("@connected", MySqlDbType.Int32).Value = 1;
+                    //cmd.ExecuteNonQuery();
 
                     steamID = "";
                     C_ID = "";
@@ -175,8 +169,6 @@ namespace SquadCSharp
                     break;
                 case "playerConnected":
                     C_ID = substring[3];
-                    if (substring[3].Equals("C_2146556060"))
-                        Console.WriteLine("He was added?");
                     //Console.WriteLine(C_ID);
                     //Adding the User C_ID to the Dictionary First, since we don't know the UserName yet. 
                     C_IDWithUser.Add(substring[3], "not defined");
@@ -246,23 +238,23 @@ namespace SquadCSharp
 
                         try
                         {
-                            _SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType , @message)";
-                            //Console.WriteLine(_SQL);
-                            cmd = new MySqlCommand(_SQL, conn);
-                            cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
-                            cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = "Disconnected";
-                            cmd.Parameters.Add("@message", MySqlDbType.Text).Value = C_IDWithUser[SteamWithC_ID[substring[2]]] + " left the server";
-                            cmd.ExecuteNonQuery();
+                            //_SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType , @message)";
+                            ////Console.WriteLine(_SQL);
+                            //cmd = new MySqlCommand(_SQL, conn);
+                            //cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
+                            //cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = "Disconnected";
+                            //cmd.Parameters.Add("@message", MySqlDbType.Text).Value = C_IDWithUser[SteamWithC_ID[substring[2]]] + " left the server";
+                            //cmd.ExecuteNonQuery();
 
-                            _SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
-                                     ON DUPLICATE KEY UPDATE
-                                     userName = VALUES(userName),
-                                     connected = VALUES(connected)";
-                            cmd = new MySqlCommand(_SQL, conn);
-                            cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
-                            cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = C_IDWithUser[SteamWithC_ID[substring[2]]];
-                            cmd.Parameters.Add("@connected", MySqlDbType.UInt32).Value = 0;
-                            cmd.ExecuteNonQuery();
+                            //_SQL = @"INSERT INTO playerList(steamID, userName, connected) VALUES(@steamID, @userName, @connected)
+                            //         ON DUPLICATE KEY UPDATE
+                            //         userName = VALUES(userName),
+                            //         connected = VALUES(connected)";
+                            //cmd = new MySqlCommand(_SQL, conn);
+                            //cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
+                            //cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = C_IDWithUser[SteamWithC_ID[substring[2]]];
+                            //cmd.Parameters.Add("@connected", MySqlDbType.UInt32).Value = 0;
+                            //cmd.ExecuteNonQuery();
                         }
                         catch (Exception e)
                         {
@@ -278,6 +270,7 @@ namespace SquadCSharp
                     }
                     else
                     {
+
                         //Console.WriteLine("This user: " + substring[2] + " Has decided to leave the server");
                     }
                     break;
@@ -308,29 +301,31 @@ namespace SquadCSharp
                         {
                             adminInCameraDic.Add(substring[2], "Active");
                         }
-                        _SQL = "INSERT INTO adminlog (userName, logMessage) VALUES (@userName, @logMessage)";
-                        cmd = new MySqlCommand(_SQL, conn);
-                        cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
-                        cmd.Parameters.Add("@logMessage", MySqlDbType.Text).Value = line;
-                        cmd.ExecuteNonQuery();
+                        //sendMessageAdmin(substring);
+                        //_SQL = "INSERT INTO adminlog (userName, logMessage) VALUES (@userName, @logMessage)";
+                        //cmd = new MySqlCommand(_SQL, conn);
+                        //cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = substring[2];
+                        //cmd.Parameters.Add("@logMessage", MySqlDbType.Text).Value = line;
+                        //cmd.ExecuteNonQuery();
                     }
                     break;
                 case "chatMessage":
                     //Console.WriteLine(line);
+                    
                     //_internalClass.Add(substring);
                     try
                     {
                         _SQL = "INSERT INTO chatLog (steamID, chatType, message) VALUES (@steamID, @chatType, @message)";
                         //Console.WriteLine(_SQL);
-                        cmd = new MySqlCommand(_SQL, conn);
-                        cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
-                        cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = substring[1];
-                        cmd.Parameters.Add("@message", MySqlDbType.Text).Value = substring[4];
-                        cmd.ExecuteNonQuery();
+                        //cmd = new MySqlCommand(_SQL, conn);
+                        //cmd.Parameters.Add("@steamID", MySqlDbType.Int64).Value = Int64.Parse(substring[2]);
+                        //cmd.Parameters.Add("@chatType", MySqlDbType.VarChar).Value = substring[1];
+                        //cmd.Parameters.Add("@message", MySqlDbType.Text).Value = substring[4];
+                        //cmd.ExecuteNonQuery();
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        //Console.WriteLine(e);
                     }
                     
                     break;
@@ -340,6 +335,102 @@ namespace SquadCSharp
                     //Console.WriteLine("Default ends");
                     break;
             }
+        }
+
+        private void handleTeamKills(string[] substring, string victimName, string victimTeam)
+        {
+            string attackerResult, cIDResult;
+            Console.WriteLine("I'm inside and found player and his team: " + victimName + " : " + victimTeam);
+            C_IDWithUser.TryGetValue(substring[4], out cIDResult);
+            if (String.IsNullOrEmpty(cIDResult)) { attackerResult = ""; } else { UserWithTeam.TryGetValue(cIDResult, out attackerResult); }
+
+
+            if (String.IsNullOrEmpty(attackerResult))
+            {
+                //Console.WriteLine("There was a Potential TeamKill");
+                //Console.WriteLine("The Victim Team was: " + victimResult);
+                //Console.WriteLine(line);
+                _unidenfiedKiller += "Attacker is not part of PlayerList/TeamList; Their ID is: " + substring[4] + " ---  The Victim is: " + victimName + ":" + victimTeam + " \n";
+                System.IO.File.WriteAllText(@"C:\Users\FubarP\Documents\SquadTestFiles\AttackerOnly.txt", _unidenfiedKiller);
+            }else 
+
+            if (String.IsNullOrEmpty(victimTeam))
+            {
+                Console.WriteLine("I'm Inside this victimResult thing");
+                _unidenfiedVictim += "The Victim is Unknown in this situation, their name is: " + victimTeam + "\n";
+                System.IO.File.WriteAllText(@"C:\Users\FubarP\Documents\SquadTestFiles\VictimOnly.txt", _unidenfiedVictim);
+            }else 
+
+            //Console.WriteLine(substring[2]);
+            //Console.WriteLine(result);
+            //Console.WriteLine("");
+            //Console.WriteLine(C_IDWithUser[substring[4]]);
+            //Console.WriteLine(UserWithTeam[C_IDWithUser[substring[4]]]);
+            if (victimTeam.Equals(attackerResult))
+            {
+                //sendMessageTeamKill(substring[2], cIDResult);
+                _TeamKill += "True TK, Maybe?, Attacker: " + cIDResult + ":" + attackerResult + " -- The Victim: " + victimName + ":" + victimTeam + "\n";
+                System.IO.File.WriteAllText(@"C:\Users\FubarP\Documents\SquadTestFiles\RealTeamKills.txt", _TeamKill);
+                    //Console.WriteLine("There was a TeamKill");
+                    //Console.WriteLine(line);
+            }
+            else
+            {
+                _unidenfiedKill += "We don't know -- The Attacker: " + cIDResult + ":" + attackerResult + " and the Victim: " + victimName + ":" + victimTeam + "--- The weapon: " + substring[5] + "\n";
+                System.IO.File.WriteAllText(@"C:\Users\FubarP\Documents\SquadTestFiles\UnidenfitedKills.txt", _unidenfiedKill);
+            }
+
+        }
+
+        //public async Task sendMessageAdmin(string[] _subString)
+        //{
+        //    var returnValue = "```" + _subString[2] + " \nHas Entered Admin Cam at\n" + DateTime.Now.ToString("ddd, dd MMM yyy HH’:’mm’:’ss ‘GMT’" + "```");
+
+        //    var AdminCam = await Client.GetChannelAsync(787524708546510848);
+        //    await Client.SendMessageAsync(AdminCam, returnValue);
+        //}
+
+        //public async Task sendMessageTeamKill(string Victim, string Attacker)
+        //{
+        //    var returnValue = "```" + Victim + " \nWas Killed by:\n" + Attacker + "```";
+
+
+        //    var TeamKill = await Client.GetChannelAsync(787524643564814366);
+        //    Client.SendMessageAsync(TeamKill, returnValue);
+        //}
+        //public async Task sendMessagePotentialTeamKill(string Victim, string Attacker)
+        //{
+        //    var returnValue = "```" + Victim + " \nWas Killed by:\n" + Attacker + "```";
+
+
+        //    var TeamKill = await Client.GetChannelAsync(788904101471453195);
+        //    await Client.SendMessageAsync(TeamKill, returnValue);
+        //}
+
+        public async Task MainAsync()
+        {
+
+            //var cfg = new DiscordConfiguration
+            //{
+            //    Token = ConfigurationManager.AppSettings.Get("20r_token"),
+            //    TokenType = TokenType.Bot
+            //};
+
+            //this.Client = new DiscordClient(cfg);
+
+            //Client.MessageCreated += async (e) =>
+            //{
+            //    if (e.Message.Content.ToLower().StartsWith("ping"))
+            //    {
+            //        await e.Channel.SendMessageAsync(e.Channel.ToString());
+            //    }
+            //};
+
+            //var test = await Client.GetChannelAsync(787524708546510848);
+            //Client.SendMessageAsync(test, "Test");
+
+            //await Client.ConnectAsync();
+            //await Task.Delay(-1);
         }
     }
 }

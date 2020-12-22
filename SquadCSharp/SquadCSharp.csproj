@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="CoreRCON" Version="5.0.0" />
+    <PackageReference Include="DSharpPlus" Version="3.2.3" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
     <PackageReference Include="MySql.Data" Version="8.0.22" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />

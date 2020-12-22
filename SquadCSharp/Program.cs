@@ -13,7 +13,8 @@ using System.Text.RegularExpressions;
 //using System.Data.SqlClient;
 using MySql.Data;
 using MySql.Data.MySqlClient;
-
+using DSharpPlus;
+using DSharpPlus.Entities;
 
 namespace SquadCSharp
 {
@@ -30,21 +31,32 @@ namespace SquadCSharp
         static string _20rIP = ConfigurationManager.AppSettings.Get("20r_IP");
         static ushort _20rPort = Convert.ToUInt16(ConfigurationManager.AppSettings.Get("20r_Port"));
         static string _20rPass = ConfigurationManager.AppSettings.Get("20r_Pass");
+        public DiscordClient Client { get; set; }
         //private SqlConnection _conn;
         static async Task Main(string[] args)
         {
+
             string lineReturn = "";
+
+            //var test = await prog.Client.GetChannelAsync(787524708546510848);
 
             InhertianceClass test22 = new InhertianceClass();
             Console.WriteLine(test22._InternalTest);
             Boolean userJoining = false; 
+
             Test2 tryingSomething = new Test2();
+
+            
+
             Console.WriteLine(tryingSomething._internalClass._InternalTest);
             Console.WriteLine(tryingSomething._internalClass._InternalTest);
             Regex rg;
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/ChatExample.txt";
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/ServerLog.log";
-            string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGameReal.log";
+            //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGame.log";
+            //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadReal.log";
+            string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/fb.txt";
+            //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGameReal.log";
             Console.WriteLine("Hello World!");
             Boolean done = true;
 
@@ -117,6 +129,7 @@ namespace SquadCSharp
                                 Match match = rg.Match(line);
                                 if (match.Success)
                                 {
+                                    //Console.WriteLine("We found match with: " + tester);
                                     /*|| Regex.IsMatch(match.Value, "Error: No teams exist yet")*/
                                     if (userJoining & Regex.IsMatch(match.Value, "LogEasyAntiCheatServer"))
                                     {
@@ -183,25 +196,18 @@ namespace SquadCSharp
 
 
 
-
-        public string Parser(string line)
-        {
-
-            return "test";
-        }
-
-        public static async Task<string> TestAllAsync()
-        {
-            var rcon = new RCON(IPAddress.Parse(_20rIP), _20rPort, _20rPass, 10000, true);
-            await rcon.ConnectAsync();
+        //public static async Task<string> TestAllAsync()
+        //{
+        //    var rcon = new RCON(IPAddress.Parse(_20rIP), _20rPort, _20rPass, 10000, true);
+        //    await rcon.ConnectAsync();
 
 
 
-            Console.WriteLine("Passed Connection Async");
-            string test = await rcon.SendCommandAsync("ListPlayers");
-            rcon.Dispose();
-            return test;
-        }
+        //    Console.WriteLine("Passed Connection Async");
+        //    string test = await rcon.SendCommandAsync("ListPlayers");
+        //    rcon.Dispose();
+        //    return test;
+        //}
     }
 
 

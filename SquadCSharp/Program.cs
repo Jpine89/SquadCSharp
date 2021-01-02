@@ -55,7 +55,8 @@ namespace SquadCSharp
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/ServerLog.log";
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGame.log";
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadReal.log";
-            string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/fb.txt";
+            //string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/fb.txt";
+            string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/SquadGame.log";
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGameReal.log";
             Console.WriteLine("Hello World!");
             Boolean done = true;
@@ -71,7 +72,7 @@ namespace SquadCSharp
             //              )";
 
             string _sql = "";
-            connetionString = "server=localhost;user=squadC;Password=squad;port=3306;Database=testdb";
+            connetionString = "server=66.45.251.42;user=SquadLB;Password=v4~7bMs2;port=3306;Database=squadlbc_";
             //connetionString = "Server=localhost\\SQLEXPRESS;Database=master;Trusted_Connection=True;";
             //SqlConnection cnn = new SqlConnection(connetionString);
             MySqlConnection conn = new MySqlConnection(connetionString);
@@ -186,7 +187,7 @@ namespace SquadCSharp
             conn.Close();
             Console.WriteLine("Done.");
 
-
+            Console.WriteLine("Number of peeps connected: @p", tryingSomething.playerStats.Count);
 
 
 
@@ -194,7 +195,7 @@ namespace SquadCSharp
 
         }
 
-
+        
 
         //public static async Task<string> TestAllAsync()
         //{

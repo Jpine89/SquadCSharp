@@ -31,6 +31,8 @@ namespace SquadCSharp
         static string _20rIP = ConfigurationManager.AppSettings.Get("20r_IP");
         static ushort _20rPort = Convert.ToUInt16(ConfigurationManager.AppSettings.Get("20r_Port"));
         static string _20rPass = ConfigurationManager.AppSettings.Get("20r_Pass");
+        static string _login = ConfigurationManager.AppSettings.Get("Login");
+        static string _dataBase = ConfigurationManager.AppSettings.Get("DB");
         public DiscordClient Client { get; set; }
         //private SqlConnection _conn;
         static async Task Main(string[] args)
@@ -72,7 +74,7 @@ namespace SquadCSharp
             //              )";
 
             string _sql = "";
-            connetionString = "server=66.45.251.42;user=SquadLB;Password=v4~7bMs2;port=3306;Database=squadlbc_";
+            connetionString = $"server={_20rIP};user={_login};Password={_20rPass};port={_20rPort};Database={_dataBase}";
             //connetionString = "Server=localhost\\SQLEXPRESS;Database=master;Trusted_Connection=True;";
             //SqlConnection cnn = new SqlConnection(connetionString);
             MySqlConnection conn = new MySqlConnection(connetionString);

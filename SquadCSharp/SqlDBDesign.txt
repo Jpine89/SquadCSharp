@@ -15,21 +15,20 @@ DROP TABLE IF EXISTS killlog;
 DROP TABLE IF EXISTS playerKilled;
 DROP TABLE IF EXISTS playerWounded;
 DROP TABLE IF EXISTS serverList;
+DROP TABLE IF EXISTS gameHistory;
 
 CREATE TABLE IF NOT EXISTS steamuser (
-	steamID bigint NOT NULL UNIQUE,
-	kills int,
-	deaths int, 
-	wounded int,
-	teamkills int,
-	revives int
+    steamID bigint NOT NULL UNIQUE,
+    kills int default 0,
+    deaths int default 0, 
+    wounded int default 0,
+    teamkills int default 0,
+    revives int default 0
 );
 
-
 CREATE TABLE IF NOT EXISTS userNameList(
-	id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	steamID bigint,
-	userName VarChar(256)
+	userName VarChar(256) UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS chatLog(
@@ -85,6 +84,10 @@ CREATE TABLE IF NOT EXISTS serverList(
 	serverID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	serverName VarChar(256),
 	serverTag VarChar(256)
+);
+
+CREATE TABLE IF NOT EXISTS gameHistory(
+	id int NOT NULL AUTO_INCREMENT PRIMARY KEY
 );
 
 SHOW TABLES;

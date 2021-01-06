@@ -58,9 +58,10 @@ namespace SquadCSharp
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGame.log";
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadReal.log";
             //string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/fb.txt";
-            string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/SquadGame.log";
+            string fileName = "C:/Users/FubarP/Documents/SquadServerLogs/SquadGameWeek.log";
             //string fileName = "G:/SquadTestServer/servers/squad_server/SquadGame/Saved/Logs/SquadGameReal.log";
             Console.WriteLine("Hello World!");
+            Console.WriteLine(System.DateTime.Now);
             Boolean done = true;
 
             string connetionString = null;
@@ -132,25 +133,26 @@ namespace SquadCSharp
                                 Match match = rg.Match(line);
                                 if (match.Success)
                                 {
-                                    //Console.WriteLine("We found match with: " + tester);
-                                    /*|| Regex.IsMatch(match.Value, "Error: No teams exist yet")*/
-                                    if (userJoining & Regex.IsMatch(match.Value, "LogEasyAntiCheatServer"))
-                                    {
-                                        subStrings = Regex.Split(line, tester.Value);
-                                        tryingSomething.matchList("UserJoining", match.Value, subStrings, conn, userJoining);
-                                        lineReturn = match.Value;
-                                        userJoining = false;
-                                        break;
-                                    }
-                                    else if (Regex.IsMatch(match.Value, "NewPlayer: BP_PlayerController_C"))
-                                    {
-                                        subStrings = Regex.Split(line, tester.Value);
-                                        tryingSomething.matchList("playerConnected", match.Value, subStrings, conn);
-                                        lineReturn = match.Value;
-                                        userJoining = true;
-                                        break;
-                                    }
-                                    else if (!lineReturn.Equals(match.Value))
+                                    ////Console.WriteLine("We found match with: " + tester);
+                                    ///*|| Regex.IsMatch(match.Value, "Error: No teams exist yet")*/
+                                    //if (userJoining & Regex.IsMatch(match.Value, "LogEasyAntiCheatServer"))
+                                    //{
+                                    //    subStrings = Regex.Split(line, tester.Value);
+                                    //    tryingSomething.matchList("UserJoining", match.Value, subStrings, conn, userJoining);
+                                    //    lineReturn = match.Value;
+                                    //    userJoining = false;
+                                    //    break;
+                                    //}
+                                    //else if (Regex.IsMatch(match.Value, "NewPlayer: BP_PlayerController_C"))
+                                    //{
+                                    //    subStrings = Regex.Split(line, tester.Value);
+                                    //    tryingSomething.matchList("playerConnected", match.Value, subStrings, conn);
+                                    //    lineReturn = match.Value;
+                                    //    userJoining = true;
+                                    //    break;
+                                    //}
+                                    //else 
+                                    if (!lineReturn.Equals(match.Value))
                                     {
                                         //Console.WriteLine(match.Value);
                                         subStrings = Regex.Split(line, tester.Value);
@@ -189,10 +191,16 @@ namespace SquadCSharp
             conn.Close();
             Console.WriteLine("Done.");
 
-            Console.WriteLine("Number of peeps connected: @p", tryingSomething.playerStats.Count);
+            Console.WriteLine($"Number of peeps connected: {tryingSomething.playerStats.Count}");
 
 
+            foreach(var p in tryingSomething.playerStats)
+            {
+                Console.WriteLine($"{p.Key} -> {p.Value[0]} | {p.Value[1]} | {p.Value[2]} | {p.Value[3]} | {p.Value[4]}");
+            }
 
+
+            Console.WriteLine(System.DateTime.Now);
 
 
         }

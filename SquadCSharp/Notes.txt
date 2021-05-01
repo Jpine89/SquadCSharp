@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SquadCSharp
+{
+    class Notes
+    {
+    }
+}
+
+
+
+
+-------------------------------
+Refactoring Code Ideas:
+    Change Test2.cs to an actual name class. 
+    Add new Util like class for all case objects. 
+        This would allow us to quickly and easily find code and make it so each case object is seperated into it's own function
+    Look into creating an API for all Database Calls. 
+        This would remove any concerns that people would have access to the database backend code. 
+    
+
+------------------------------
+New Function Ideas:
+    Add a new Case Statement for IP Logging

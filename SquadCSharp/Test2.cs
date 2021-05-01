@@ -72,7 +72,7 @@ namespace SquadCSharp
         string _NormalKills;
         string _errorLog;
 
-        Util _Util;
+        DataBaseUtil _Util;
         public DiscordClient Client { get; set; }
 
         public Test2()
@@ -112,12 +112,17 @@ namespace SquadCSharp
             _allKills = "";
             _NormalKills = "";
             _errorLog = "";
-            _Util = new Util();
+            _Util = new DataBaseUtil();
 
         }
 
         private void regexSetup()
         {
+            //[2021.02.26 - 19.41.15:239][427]LogRCONServer: Verbose: 2346702:Tick(): ChatMessage sent via RCON: [ChatAdmin] ASQKillDeathRuleset: Player GrÜmÞŠ% s Team Killed Player TestBot101
+             //[2021.02.26 - 19.41.15:259][429]LogRCONServer: Verbose: 2346759:SendOutboundMessage(): Successfully sent SERVERDATA_RESPONSE_VALUE with 96 bytes:[ChatAdmin] ASQKillDeathRuleset: Player GrÜmÞŠ% s Team Killed Player TestBot101
+
+            //[2021.02.26 - 19.40.49:633][152]LogSquadTrace:[DedicatedServer]IsSpawnpointAllowed(): On Server PC = GrÜmÞŠ Spawn = BP_ForwardBaseSpawn_C_2147479222 DeployRole =
+            //[2021.02.26 - 19.40.49:633][152]LogSquadTrace:[DedicatedServer]IsSpawnpointAllowed(): On Server GameStartTeamID = 1 PSTeamID = 1 CanSpawn() = 1
             _AllPatterns.Add("playerConnected", "\\[([0-9.:-]+)][[ 0-9]*]LogSquad: PostLogin: NewPlayer: BP_PlayerController_C (.+).BP_PlayerController_(C_[0-9]+)");
             _AllPatterns.Add("steamID", "\\[([0-9.:-]+)]\\[[ 0-9]*]LogEasyAntiCheatServer: \\[[0-9:]+]\\[[A-z]+]\\[EAC Server] \\[Info]\\[RegisterClient] Client: ([A-z0-9]+) PlayerGUID: ([0-9]{17}) PlayerIP: [0-9]{17} OwnerGUID: [0-9]{17} PlayerName: (.+)");
             _AllPatterns.Add("errorTeam", "\\[([0-9.:-]+)]\\[[ 0-9]*]LogSquad: Error: No teams .+ Name: (.+)");

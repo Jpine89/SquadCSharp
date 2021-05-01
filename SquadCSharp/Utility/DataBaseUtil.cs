@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SquadCSharp
 {
-    class Util
+    class DataBaseUtil
     {
         public Boolean logRevives(MySqlConnection conn, string medic)
         {

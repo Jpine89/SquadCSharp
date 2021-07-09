@@ -189,6 +189,7 @@ namespace SquadCSharp
 
 
             conn.Close();
+            Console.Clear();
             Console.WriteLine("Done.");
 
             Console.WriteLine($"Number of peeps connected: {tryingSomething.playerStats.Count}");
@@ -201,7 +202,6 @@ namespace SquadCSharp
 
 
             Console.WriteLine(System.DateTime.Now);
-
 
         }
 

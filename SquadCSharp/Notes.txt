@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SquadCSharp
-{
-    class Notes
-    {
-    }
-}
-
-
-
+﻿Notes written by FubarP on the overall design of the Project. Notes can and will be deleted
+as it goes. This is mainly just used to help collect thoughts on problems along with potential future
+ideas on the application as a whole.
 
 -------------------------------
 Refactoring Code Ideas:
@@ -24,3 +14,47 @@ Refactoring Code Ideas:
 ------------------------------
 New Function Ideas:
     Add a new Case Statement for IP Logging
+
+    Logging Ips to players.
+        How do we go about doing this?
+
+Setup:
+    With the modification in the Engine.ini, every 10 seconds a ping is sent to Steam
+    This ping returns the list of players connected via their IP only. 
+    --Upside: we have their IP. 
+    --Downside: We have no means of knowing who the IP belongs to.
+
+
+
+------------------------------
+Been pondering a solution for my bot for what happens when say.. the server stays up, 
+but the bot crashes. How do I regain that local memory without rewriting to the database. 
+
+Few potential thoughts. Look into writing the data out into a file format of my 
+choice that can be used for if the bot discharges improperly. 
+
+----Essentially I would be writing all the data along witht he last line I read. 
+Then if the bot crashes, it reloads the data in, and starts reading the logfile where 
+it left off. Some verifying for integrity would need to exist but this seems to be the
+more plausible solution. 
+
+----Second solution. Have the bot create checkpoints. 
+Instead of saving all the data on the fly which can cause memory loss issues. 
+We instead create a checkpoint. Similiar to the above but the bot would send a 
+RCON message that gets recorded in the logs? This implementation would require 
+setting up RCON connection which isn't useful for the bot. 
+
+
+---------------------------------
+How I want to build this out:
+    --Client : This will run in parallel with the Squad Game on a server. Information will be saved Locally
+                and any data that needs to be passed up to the Web App will use a REST APIs to pass data to the Server
+    --Server/Database: This will run as a purly Rest API Database Server. All Back End Functionality will be placed here. 
+                    THe concept is that as the Client side grows, this will be helping servers store data on players that
+                    will be passed to the Web App when a call is made.
+    --Web App: This is just a Web App that will load the Data from the Database for Owners/Admins/Mods to use. A secondary feature will involve
+                Rcon that will be injected into the Blazor app that will communicate with the Client Server.
+
+How the initial build will be designed
+    --Client/Database : Until we get an API built, or expand it to other servers. The Client will host the Backend Database Calls
+    --Web App : Will be like how the intended design will function.

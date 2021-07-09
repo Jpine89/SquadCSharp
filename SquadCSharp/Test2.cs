@@ -1,5 +1,6 @@
 ﻿using DSharpPlus;
 using MySql.Data.MySqlClient;
+using SquadCSharp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -72,11 +73,17 @@ namespace SquadCSharp
         string _NormalKills;
         string _errorLog;
 
-        DataBaseUtil _Util;
+        DataBaseUtil _UtilDB;
         public DiscordClient Client { get; set; }
 
         public Test2()
         {
+            Patterns testPat = new Patterns();
+            Helper testHelp = new Helper();
+
+            testPat.publicVoid();
+            testHelp.publicVoid(testPat.cID_to_steam);
+
             C_ID = "";
             adminInCameraList = new List<string>();
             adminInCameraDic = new Dictionary<string, string>();
@@ -112,7 +119,7 @@ namespace SquadCSharp
             _allKills = "";
             _NormalKills = "";
             _errorLog = "";
-            _Util = new DataBaseUtil();
+            _UtilDB = new DataBaseUtil();
 
         }
 
@@ -199,11 +206,11 @@ namespace SquadCSharp
                             if (steamID.Equals(""))
                                 steamID = "00000000000000000";
 
-                            internalLog = _Util.logUserNameList(conn, steamID, substring[2]);
-                            internalLog = _Util.logPlayerList(conn, steamID, substring[2], true);
+                            internalLog = _UtilDB.logUserNameList(conn, steamID, substring[2]);
+                            internalLog = _UtilDB.logPlayerList(conn, steamID, substring[2], true);
                             chatType = "Connected";
                             message = (Int64.Parse(steamID) > 0) ? $"{substring[2]} Has joined the Server" : $"{substring[2]} Has Joined with missing SteamID";
-                            internalLog = _Util.logChats(conn, steamID, chatType, message);
+                            internalLog = _UtilDB.logChats(conn, steamID, chatType, message);
                             _playerList.Add(substring[2]);
                             //{Kill, Death, Wound, Team, Connected}
                             //{0     1      2      3     4        }
@@ -296,7 +303,7 @@ namespace SquadCSharp
                         }
                         else
                         {
-                            bool internalLog = _Util.logRevives(conn, cID_to_steam[user_to_cID[medic]]);
+                            bool internalLog = _UtilDB.logRevives(conn, cID_to_steam[user_to_cID[medic]]);
                         }
                         break;
                     }
@@ -372,8 +379,8 @@ namespace SquadCSharp
                                 string chatType, message;
                                 chatType = "Disconnected";
                                 message = cID_to_user[SteamWithC_ID[substring[2]]] + " left the server";
-                                bool internalLog = _Util.logChats(conn, substring[2], chatType, message);
-                                internalLog = _Util.logPlayerList(conn, substring[2], cID_to_user[SteamWithC_ID[substring[2]]]);
+                                bool internalLog = _UtilDB.logChats(conn, substring[2], chatType, message);
+                                internalLog = _UtilDB.logPlayerList(conn, substring[2], cID_to_user[SteamWithC_ID[substring[2]]]);
                                 //Console.WriteLine("Person removed: " + C_IDWithUser[SteamWithC_ID[substring[2]]]);
                                 _playerList.Remove(cID_to_user[SteamWithC_ID[substring[2]]]);
                             }
@@ -435,7 +442,7 @@ namespace SquadCSharp
                         {
                             adminInCameraList.Add(line);
                             adminInCameraDic[substring[2]] = "Active";
-                            bool internalLog = _Util.logAdmin(conn, substring[2], line);
+                            bool internalLog = _UtilDB.logAdmin(conn, substring[2], line);
                             //sendMessageAdmin(substring);
                         }
                         break;
@@ -446,7 +453,7 @@ namespace SquadCSharp
                         string chatType, message;
                         chatType = substring[1];
                         message = substring[4];
-                        bool internalLog = _Util.logChats(conn, substring[2], chatType, message);
+                        bool internalLog = _UtilDB.logChats(conn, substring[2], chatType, message);
                         //_internalClass.Add(substring);
                         break;
                     }
@@ -474,7 +481,7 @@ namespace SquadCSharp
                 return;
             }
 
-
+            //I have no idea what this condition statement is for -Pine 05/02/21
             if (errorTeam)
             {
                 _steamID = substring[3];
@@ -491,7 +498,7 @@ namespace SquadCSharp
                 cID_to_steam.Add(_CID, steamID);
             }
 
-            bool internalLog = _Util.logSteamUser(conn, _steamID);
+            bool internalLog = _UtilDB.logSteamUser(conn, _steamID);
             if (errorTeam)
             {
                 updatePlayerList(_CID, _steamID, conn);
@@ -510,12 +517,12 @@ namespace SquadCSharp
 
             bool internalLog;
             string chatType, message;
-            internalLog = _Util.logUserNameList(conn, steamID, cID_to_user[_CID]);
-            internalLog = _Util.logPlayerList(conn, steamID, cID_to_user[_CID], true);
+            internalLog = _UtilDB.logUserNameList(conn, steamID, cID_to_user[_CID]);
+            internalLog = _UtilDB.logPlayerList(conn, steamID, cID_to_user[_CID], true);
 
             chatType = "Connected";
             message = (Int64.Parse(steamID) > 0) ? $"{cID_to_user[_CID]} SteamID has Been Established" : $"{cID_to_user[_CID]} ::: Despite our best efforts, we have failed to acquire the SteamID again";
-            internalLog = _Util.logChats(conn, steamID, chatType, message);
+            internalLog = _UtilDB.logChats(conn, steamID, chatType, message);
             return;
         }
 
@@ -564,12 +571,12 @@ namespace SquadCSharp
                         steamID = "00000000000000000";
                         chatType = "TeamKill";
                         message = $"Player: {victimName} was killed by {attackerName}";
-                        bool internalLog = _Util.logChats(conn, steamID, chatType, message);
+                        bool internalLog = _UtilDB.logChats(conn, steamID, chatType, message);
 
                         string[] victim, attacker;
                         victim = new string[] { victimName, victimTeam, cID_to_steam.ContainsKey(user_to_cID[victimName]) ? cID_to_steam[user_to_cID[victimName]] : "1111" };
                         attacker = new string[] { attackerName, attackerTeam, cID_to_steam.ContainsKey(substring[4]) ? cID_to_steam[substring[4]] : "0000" };
-                        internalLog = _Util.logWounds(conn, victim, attacker, substring, true);
+                        internalLog = _UtilDB.logWounds(conn, victim, attacker, substring, true);
                     }
                     //We don't record Suicides. 
                 }
@@ -597,7 +604,7 @@ namespace SquadCSharp
                     string[] victim, attacker;
                     victim = new string[] { victimName, victimTeam, cID_to_steam.ContainsKey(user_to_cID[victimName]) ? cID_to_steam[user_to_cID[victimName]] : "1111" };
                     attacker = new string[] { attackerName, attackerTeam, cID_to_steam.ContainsKey(substring[4]) ? cID_to_steam[substring[4]] : "0000" };
-                    bool internalLog = _Util.logWounds(conn, victim, attacker, substring);
+                    bool internalLog = _UtilDB.logWounds(conn, victim, attacker, substring);
                     playerStats[attackerName][2] += 1;
                 }
                 else
@@ -615,7 +622,7 @@ namespace SquadCSharp
                     string[] victim, attacker;
                     victim = new string[] { victimName, cID_to_steam.ContainsKey(user_to_cID[victimName]) ? cID_to_steam[user_to_cID[victimName]] : "1111" };
                     attacker = new string[] { attackerName, cID_to_steam.ContainsKey(substring[4]) ? cID_to_steam[substring[4]] : "0000" };
-                    bool internalLog = _Util.logKills(conn, victim, attacker, substring);
+                    bool internalLog = _UtilDB.logKills(conn, victim, attacker, substring);
                     playerStats[victimName][1] += 1;
                     playerStats[attackerName][0] += 1;
                     //System.IO.File.WriteAllText(@"C:\Users\FubarP\Documents\SquadTestFiles\_NormalKills.txt", _NormalKills);
